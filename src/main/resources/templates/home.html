@@ -1,18 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
 <body>
-    <div>
-        <form id="loginForm" method="post" action="/home/login">
-            아이디 : <input type="text" name="userId">
-            비밀번호 : <input type="password" name="userPassword" placeholder="Password">
-            <button type="submit">
-                로그인
-            </button>
-        </form>
-    </div>
+<p>Welcome Home</p>
+<div>
+    <a th:href="@{user/loginPage}">로그인 / 회원가입</a>
+</div>
 </body>
-</html>

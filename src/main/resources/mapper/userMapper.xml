@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.toy_1_wapago.mapper.user.UserMapper">
+    <select id="login" resultType="com.example.toy_1_wapago.model.user.UserVO">
+        SELECT *
+        FROM USER
+        WHERE USERID = #{userInfo.userId}
+          AND USERPASSWORD = #{userInfo.userPassword}
+    </select>
+
+    <insert id="join" parameterType="hashMap">
+        INSERT INTO USER(USERID, USERPASSWORD)
+            VALUE(#{joinInfo.userId}, #{joinInfo.userPassword});
+    </insert>
+
+</mapper>
