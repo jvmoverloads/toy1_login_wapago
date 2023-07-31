@@ -1,52 +1,73 @@
 package com.example.toy_1_wapago.controller.user;
 
-import com.example.toy_1_wapago.model.user.UserVO;
+import com.example.toy_1_wapago.model.user.*;
 import com.example.toy_1_wapago.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
-@Controller
+@RestController
 @RequestMapping("/user")
 public class UserController {
 
     @Autowired
     UserService userService;
 
-    @GetMapping("/loginPage")
-    public String login() {
-        return "member/login";
-    }
-
     @PostMapping("/login")
-    public String loginSubmit(UserVO userInfo) {
-        UserVO user = userService.login(userInfo);
+    public LoginResponse loginSubmit(LoginRequest loginRequest, HttpServletRequest httpServletRequest) {
+        String loginId = loginRequest.getUserId();
+        String loginPassword = loginRequest.getUserPassword();
 
-        if(user != null) {
-            System.out.println("로그인성공");
-            return "home";
+        if (!StringUtils.hasText(loginId)) {
+            throw new RuntimeException("아이디가 비어있습니다.");
         }
 
-        return null;
-    }
+        if (!StringUtils.hasText(loginPassword)) {
+            throw new RuntimeException("패스워드가 비어있습니다.");
+        }
 
-    @GetMapping("/joinPage")
-    public String joinPage() {
-        return "member/join";
+        LoginResponse loginResponse = userService.login(loginRequest);
+
+        httpServletRequest.getSession().invalidate();
+
+        HttpSession session = httpServletRequest.getSession(true);
+        session.setAttribute("userId", loginResponse.getUserId());
+        session.setMaxInactiveInterval(1800);
+        System.out.println("right after Login : " + httpServletRequest.getSession(false));
+
+        return loginResponse;
     }
 
     @PostMapping("/join")
-    public String join(@RequestParam Map<String, String> joinInfo) {
-        String joinId = joinInfo.get("userId");
-        String joinPassword = joinInfo.get("userPassword");
+    public JoinResponse join(JoinRequest joinRequest) {
+        String joinId = joinRequest.getUserId();
+        String joinPassword = joinRequest.getUserPassword();
 
-        System.out.println("joinId = " + joinId);
-        System.out.println("joinPassword = " + joinPassword);
+        if (!StringUtils.hasText(joinId))
+            throw new RuntimeException("아이디가 비어있습니다.");
 
-        userService.join(joinInfo);
+        if (!StringUtils.hasText(joinPassword))
+            throw new RuntimeException("패스워드가 비어있습니다.");
 
-        return null;
+        userService.join(joinRequest);
+        JoinResponse joinResponse = userService.joinAfter(joinRequest);
+
+        return joinResponse;
+    }
+
+    @GetMapping("/getSession")
+    public ResponseEntity<String> getSession(HttpServletRequest httpServletRequest) {
+        HttpSession session = httpServletRequest.getSession(false);
+
+        if(session != null) {
+            String userId = (String) session.getAttribute("userId");
+            return ResponseEntity.ok("user Id: " + userId);
+        } else {
+            return ResponseEntity.ok("session not found");
+        }
     }
 }
