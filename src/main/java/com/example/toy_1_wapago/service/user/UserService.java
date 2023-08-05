@@ -1,7 +1,6 @@
 package com.example.toy_1_wapago.service.user;
 
 import com.example.toy_1_wapago.model.user.*;
-import org.springframework.data.relational.core.sql.Join;
 import org.springframework.stereotype.Service;
 
 @Service

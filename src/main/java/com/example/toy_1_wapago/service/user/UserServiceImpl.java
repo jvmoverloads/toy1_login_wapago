@@ -1,5 +1,6 @@
 package com.example.toy_1_wapago.service.user;
 
+import com.example.toy_1_wapago.controller.user.UserController;
 import com.example.toy_1_wapago.mapper.user.UserMapper;
 import com.example.toy_1_wapago.model.user.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserServiceImpl implements UserService {
+    UserController userController = new UserController();
+
     @Autowired
     private UserMapper userMapper;
 
