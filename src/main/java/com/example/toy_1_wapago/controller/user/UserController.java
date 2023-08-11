@@ -2,36 +2,45 @@ package com.example.toy_1_wapago.controller.user;
 
 import com.example.toy_1_wapago.model.user.*;
 import com.example.toy_1_wapago.service.user.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 
+@Slf4j
 @RestController
 @RequestMapping("/user")
 public class UserController {
+    public static final String LOGIN_MEMBER = "loginMember";
+
     @Autowired
     UserService userService;
 
-    // TODO : 세션 생성시 컨트롤러에서 HttpServletRequest로 생성하지 말고 파라미터로 받은 후 서비스에서 구현할 것.
-    // 1. 유연성과 테스트 용이성
-    //    HttpSession을 파라미터로 받는 방식은 의존성 주입(Dependency Injection)을 사용하여 세션을 컨트롤러에 주입할 수 있습니다.
-    //    이를 통해 세션 관리를 더 유연하게 구현할 수 있으며, 특히 테스트 시에 가짜 세션(Mock 세션)을 주입하여 테스트하기 쉽습니다.
-    //    반면 HttpServletRequest를 이용하면, 테스트하기 어려운 환경이 될 수 있습니다.
-    // 2. 컨트롤러의 역할 명확화
-    //    컨트롤러가 HttpSession을 직접 다루지 않고 파라미터로 받아서 전달하면, 컨트롤러의 역할이 좀 더 명확해집니다.
-    //    컨트롤러는 단순히 요청을 처리하고 응답을 반환하는 역할에만 집중할 수 있으며, 세션 관리 등의 복잡한 작업은 서비스 레이어로 분리하여 처리할 수 있습니다.
-    // 3. 의존성 제거
-    //    HttpServletRequest를 이용하는 방식은 서블릿 API에 종속적이므로, 이를 컨트롤러에 직접 의존하는 것은 바람직하지 않습니다.
-    //    또한, 서블릿 API에 의존하지 않으면 서블릿을 다른 컨트롤러 기술로 쉽게 교체할 수 있습니다.
     @PostMapping("/login")
-    public LoginResponse loginSubmit(HttpServletRequest httpServletRequest, HttpSession httpSession, LoginRequest loginRequest) throws Exception {
-        return userService.login(httpServletRequest, httpSession, loginRequest);
+    public LoginResponse login(HttpServletRequest httpServletRequest, HttpSession httpSession, @Valid LoginRequest loginRequest) throws Exception {
+        // TODO : controller에서 받는 LoginResponse를 통해서 session에 정보를 저장하기(service layer로 http관련객체 넘기지 말 것)
+        LoginResponse loginResponse = userService.login(loginRequest);
+        String loginId = loginResponse.getUserId();
+
+        /*
+            세션 : 서버 측에서 유지되는 상태정보, 클라이언트의 요청을 서버가 처리하는 동안에만 유지.
+            쿠키 : 클라이언트 측에 저장되는 작은 데이터조각. 서버가 클라이언트에게 전달, 클라이언트가 이를 저장하고 필요에 따라 요청과 함께 다시 서버에 전송.
+                  쿠키는 클라이언트의 웹브라우저에 저장되기 때문에, 만료기간이 지나거나 클라이언트가 쿠키를 삭제할 때까지 지속.
+            관계 : 쿠키를 사용하여 세션ID를 클라이언트에 저장하고, 이를 통해 세션을 식별
+        */
+
+        httpSession.setAttribute(LOGIN_MEMBER, loginId);    // 세션에 사용자 정보 저장
+        log.info(httpServletRequest.getHeader("Cookie"));
+
+        return loginResponse;
     }
 
     @PostMapping("/join")
-    public JoinResponse join(JoinRequest joinRequest) throws Exception {
+    // TODO : @Valid적용하기
+    public JoinResponse join(@Valid JoinRequest joinRequest) throws Exception {
         userService.join(joinRequest);
 
         JoinResponse joinResponse = userService.joinAfter(joinRequest);
