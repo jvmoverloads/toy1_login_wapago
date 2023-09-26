@@ -10,5 +10,5 @@ import javax.servlet.http.HttpSession;
 public interface UserService {
     void join(JoinRequest joinRequest);
     JoinResponse joinAfter(JoinRequest joinRequest);
-    LoginResponse login(HttpServletRequest httpServletRequest, HttpSession httpSession, LoginRequest loginRequest);
+    LoginResponse login(LoginRequest loginRequest);
 }

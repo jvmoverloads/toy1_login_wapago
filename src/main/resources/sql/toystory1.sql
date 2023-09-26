@@ -1,5 +1,3 @@
-SELECT * from user;
+SELECT * from USER;
 
 DELETE FROM user;
-
-
